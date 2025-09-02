@@ -37,7 +37,7 @@ public class LocalParticipant extends BaseParticipant {
     public Config controlPlaneConfig() {
         Map<String, String> settings = new HashMap<>() {
             {
-                put(PARTICIPANT_ID, id);
+                put(PARTICIPANT_ID, getDid());
                 put("web.http.port", String.valueOf(getFreePort()));
                 put("web.http.path", "/api");
                 put("web.http.protocol.port", String.valueOf(controlPlaneProtocol.get().getPort()));
@@ -72,6 +72,7 @@ public class LocalParticipant extends BaseParticipant {
                 put("edc.iam.did.web.use.https", "false");
                 put("edc.iam.trusted-issuer.issuer.id", trustedIssuer);
                 put("edc.sql.schema.autocreate", "false");
+                put("tractusx.edc.participant.bpn", id);
             }
         };
 
