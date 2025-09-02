@@ -32,6 +32,7 @@ import org.eclipse.tractusx.edc.compatibility.tests.fixtures.BaseParticipant;
 import org.eclipse.tractusx.edc.compatibility.tests.fixtures.DataspaceIssuer;
 import org.eclipse.tractusx.edc.compatibility.tests.fixtures.IdentityHubParticipant;
 import org.eclipse.tractusx.edc.compatibility.tests.fixtures.LocalParticipant;
+import org.eclipse.tractusx.edc.compatibility.tests.fixtures.MockBdrsClient;
 import org.eclipse.tractusx.edc.compatibility.tests.fixtures.RemoteParticipant;
 import org.eclipse.tractusx.edc.compatibility.tests.fixtures.RemoteParticipantExtension;
 import org.eclipse.tractusx.edc.compatibility.tests.fixtures.Runtimes;
@@ -46,6 +47,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.junit.jupiter.params.support.ParameterDeclarations;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;
@@ -118,7 +120,7 @@ public class TransferEndToEndTest {
             Runtimes.CONTROL_PLANE.create("local-control-plane")
                     .configurationProvider(() -> POSTGRESQL.configFor(LOCAL_PARTICIPANT.getName()))
                     .configurationProvider(LOCAL_PARTICIPANT::controlPlaneConfig)
-                    .registerServiceMock(BdrsClient.class, DIDS::get)
+                    .registerServiceMock(BdrsClient.class, new MockBdrsClient(DIDS::get, (c) -> c))
                     .registerServiceMock(AudienceResolver.class, message -> Result.success(DIDS.get(message.getCounterPartyId())))
     );
 
@@ -254,7 +256,7 @@ public class TransferEndToEndTest {
 
     private static class ParticipantsArgProvider implements ArgumentsProvider {
         @Override
-        public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
+        public Stream<? extends Arguments> provideArguments(ParameterDeclarations parameters, ExtensionContext context) {
             return Stream.of(
                     Arguments.of(REMOTE_PARTICIPANT, LOCAL_PARTICIPANT, "dataspace-protocol-http"),
                     Arguments.of(LOCAL_PARTICIPANT, REMOTE_PARTICIPANT, "dataspace-protocol-http")
