@@ -47,7 +47,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
-import org.junit.jupiter.params.support.ParameterDeclarations;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;
@@ -103,6 +102,11 @@ public class TransferEndToEndTest {
             REMOTE_PARTICIPANT.getId(), REMOTE_PARTICIPANT.getDid()
     );
 
+    private static final Map<String, String> IDS = Map.of(
+             LOCAL_PARTICIPANT.getDid(), LOCAL_PARTICIPANT.getId(),
+             REMOTE_PARTICIPANT.getDid(), REMOTE_PARTICIPANT.getId()
+    );
+
     @Order(0)
     @RegisterExtension
     static final PostgresqlEndToEndExtension POSTGRESQL = new PostgresqlEndToEndExtension();
@@ -120,7 +124,7 @@ public class TransferEndToEndTest {
             Runtimes.CONTROL_PLANE.create("local-control-plane")
                     .configurationProvider(() -> POSTGRESQL.configFor(LOCAL_PARTICIPANT.getName()))
                     .configurationProvider(LOCAL_PARTICIPANT::controlPlaneConfig)
-                    .registerServiceMock(BdrsClient.class, new MockBdrsClient(DIDS::get, (c) -> c))
+                    .registerServiceMock(BdrsClient.class, new MockBdrsClient(DIDS::get, IDS::get))
                     .registerServiceMock(AudienceResolver.class, message -> Result.success(DIDS.get(message.getCounterPartyId())))
     );
 
@@ -256,7 +260,7 @@ public class TransferEndToEndTest {
 
     private static class ParticipantsArgProvider implements ArgumentsProvider {
         @Override
-        public Stream<? extends Arguments> provideArguments(ParameterDeclarations parameters, ExtensionContext context) {
+        public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
             return Stream.of(
                     Arguments.of(REMOTE_PARTICIPANT, LOCAL_PARTICIPANT, "dataspace-protocol-http"),
                     Arguments.of(LOCAL_PARTICIPANT, REMOTE_PARTICIPANT, "dataspace-protocol-http")
